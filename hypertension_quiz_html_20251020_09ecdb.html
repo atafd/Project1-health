@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Pressure Defender - Hypertension Education Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+
+        .game-container {
+            width: 900px;
+            height: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 游戏界面 */
+        .screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            padding: 30px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* 开始界面 */
+        #start-screen {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+        }
+
+        .game-subtitle {
+            font-size: 1.5em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .btn {
+            background: #ffe66d;
+            color: #333;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            background: #ffd166;
+        }
+
+        /* 游戏界面 */
+        #game-screen {
+            background: #f0f8ff;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .health-bar {
+            width: 200px;
+            height: 20px;
+            background: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+            transition: width 0.5s ease;
+        }
+
+        .score-display {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .game-area {
+            flex: 1;
+            width: 100%;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .heart {
+            width: 120px;
+            height: 120px;
+            background: #ff6b6b;
+            position: relative;
+            transform: rotate(-45deg);
+            margin-bottom: 30px;
+            animation: heartbeat 2s infinite;
+        }
+
+        .heart:before, .heart:after {
+            content: '';
+            width: 120px;
+            height: 120px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .heart:before {
+            top: -60px;
+            left: 0;
+        }
+
+        .heart:after {
+            top: 0;
+            left: 60px;
+        }
+
+        @keyframes heartbeat {
+            0%, 50%, 100% { transform: rotate(-45deg) scale(1); }
+            25%, 75% { transform: rotate(-45deg) scale(1.1); }
+        }
+
+        .question-box {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 30px;
+            border: 3px solid #4ecdc4;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .option-btn {
+            background: #dfe6e9;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+
+        .option-btn:hover {
+            background: #b2bec3;
+            transform: translateY(-2px);
+        }
+
+        .option-btn.correct {
+            background: #55efc4;
+            color: white;
+        }
+
+        .option-btn.incorrect {
+            background: #ff7675;
+            color: white;
+        }
+
+        /* 游戏结束界面 */
+        #end-screen {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            color: white;
+            text-align: center;
+        }
+
+        .result-title {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+        }
+
+        .performance-message {
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+
+        /* 学习卡片 */
+        .learning-card {
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .learning-card.active {
+            display: block;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 开始界面 -->
+        <div id="start-screen" class="screen active">
+            <h1 class="game-title">🫀 Blood Pressure Defender</h1>
+            <p class="game-subtitle">Protect your heart by answering hypertension questions!</p>
+            <button class="btn" onclick="startGame()">Start Game</button>
+            <div style="margin-top: 30px; font-size: 0.9em; opacity: 0.8;">
+                <p>Test your knowledge about hypertension and learn how to keep your heart healthy!</p>
+            </div>
+        </div>
+
+        <!-- 游戏界面 -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="health-container">
+                    <div>Heart Health:</div>
+                    <div class="health-bar">
+                        <div class="health-fill" id="health-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="score-display">Score: <span id="score">0</span></div>
+            </div>
+
+            <div class="game-area">
+                <div class="heart"></div>
+                <div class="question-box">
+                    <div class="question-text" id="question-text">Loading question...</div>
+                    <div class="options-grid" id="options-grid">
+                        <!-- 选项将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+                <div class="learning-card" id="learning-card">
+                    <h3>💡 Did You Know?</h3>
+                    <p id="learning-text">Educational content will appear here after each question.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 结束界面 -->
+        <div id="end-screen" class="screen">
+            <h2 class="result-title">Game Over!</h2>
+            <div class="final-score" id="final-score">0</div>
+            <p class="performance-message" id="performance-message">Keep learning to protect your heart!</p>
+            <button class="btn" onclick="restartGame()">Play Again</button>
+            <div style="margin-top: 30px;">
+                <p>Remember: Knowledge is the first step toward heart health! ❤️</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏数据 - 高血压相关问题
+        const questions = [
+            {
+                question: "What is considered a normal blood pressure reading?",
+                options: ["120/80 mmHg", "140/90 mmHg", "150/95 mmHg", "130/85 mmHg"],
+                correct: 0,
+                fact: "A normal blood pressure reading is below 120/80 mmHg. Readings of 130/80 mmHg or higher are considered hypertensive."
+            },
+            {
+                question: "Which organ is most directly damaged by long-term hypertension?",
+                options: ["Liver", "Heart", "Stomach", "Pancreas"],
+                correct: 1,
+                fact: "The heart is particularly vulnerable to hypertension damage, which can cause left ventricular hypertrophy and heart failure."
+            },
+            {
+                question: "What does the DASH diet specifically target?",
+                options: ["Weight loss", "Hypertension", "Diabetes", "Cholesterol"],
+                correct: 1,
+                fact: "DASH stands for Dietary Approaches to Stop Hypertension. It emphasizes fruits, vegetables, and low-sodium foods."
+            },
+            {
+                question: "Which medication class works by blocking angiotensin II?",
+                options: ["Diuretics", "Beta Blockers", "ACE Inhibitors", "Calcium Channel Blockers"],
+                correct: 2,
+                fact: "ACE Inhibitors block the formation of angiotensin II, a hormone that constricts blood vessels."
+            },
+            {
+                question: "What is the top number in a blood pressure reading called?",
+                options: ["Diastolic", "Systolic", "Cardiac", "Arterial"],
+                correct: 1,
+                fact: "Systolic pressure (top number) measures pressure when the heart beats. Diastolic (bottom number) measures pressure between beats."
+            },
+            {
+                question: "Which lifestyle change is MOST effective for blood pressure control?",
+                options: ["Reducing sodium intake", "Increasing potassium", "Regular exercise", "Stress management"],
+                correct: 0,
+                fact: "Reducing sodium intake to less than 2,300 mg daily has the most immediate impact on blood pressure reduction."
+            },
+            {
+                question: "Hypertension is often called the 'silent killer' because:",
+                options: ["It has no symptoms", "It only affects older people", "It's difficult to diagnose", "It's hereditary"],
+                correct: 0,
+                fact: "Most people with hypertension have no obvious symptoms, which is why regular screening is crucial."
+            },
+            {
+                question: "What complication is NOT associated with hypertension?",
+                options: ["Stroke", "Kidney disease", "Vision loss", "Liver cirrhosis"],
+                correct: 3,
+                fact: "Hypertension primarily affects the heart, brain, kidneys, and eyes, but not typically the liver."
+            },
+            {
+                question: "The American Heart Association recommends how many minutes of exercise weekly?",
+                options: ["60 minutes", "90 minutes", "150 minutes", "200 minutes"],
+                correct: 2,
+                fact: "150 minutes of moderate-intensity aerobic activity or 75 minutes of vigorous activity per week is recommended."
+            },
+            {
+                question: "Which blood pressure category requires immediate medical attention?",
+                options: ["Elevated (120-129/<80)", "Stage 1 (130-139/80-89)", "Stage 2 (≥140/≥90)", "Hypertensive Crisis (>180/>120)"],
+                correct: 3,
+                fact: "Blood pressure readings above 180/120 mmHg constitute a hypertensive crisis and require emergency care."
+            }
+        ];
+
+        // 游戏状态
+        let currentQuestion = 0;
+        let score = 0;
+        let health = 100;
+        let gameActive = false;
+
+        // DOM 元素
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const questionText = document.getElementById('question-text');
+        const optionsGrid = document.getElementById('options-grid');
+        const scoreDisplay = document.getElementById('score');
+        const healthFill = document.getElementById('health-fill');
+        const learningCard = document.getElementById('learning-card');
+        const learningText = document.getElementById('learning-text');
+        const finalScore = document.getElementById('final-score');
+        const performanceMessage = document.getElementById('performance-message');
+
+        // 开始游戏
+        function startGame() {
+            currentQuestion = 0;
+            score = 0;
+            health = 100;
+            gameActive = true;
+            
+            startScreen.classList.remove('active');
+            gameScreen.classList.add('active');
+            endScreen.classList.remove('active');
+            
+            updateScore();
+            updateHealth();
+            loadQuestion();
+        }
+
+        // 加载问题
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                endGame();
+                return;
+            }
+
+            const q = questions[currentQuestion];
+            questionText.textContent = q.question;
+            learningCard.classList.remove('active');
+            
+            // 清空选项
+            optionsGrid.innerHTML = '';
+            
+            // 添加新选项
+            q.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.onclick = () => checkAnswer(index);
+                optionsGrid.appendChild(button);
+            });
+        }
+
+        // 检查答案
+        function checkAnswer(selectedIndex) {
+            if (!gameActive) return;
+
+            const q = questions[currentQuestion];
+            const options = document.querySelectorAll('.option-btn');
+            
+            // 禁用所有按钮
+            options.forEach(btn => btn.disabled = true);
+            
+            // 显示正确答案和错误答案
+            options.forEach((btn, index) => {
+                if (index === q.correct) {
+                    btn.classList.add('correct');
+                } else if (index === selectedIndex && index !== q.correct) {
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            // 检查答案是否正确
+            if (selectedIndex === q.correct) {
+                score += 10;
+                updateScore();
+            } else {
+                health -= 20;
+                updateHealth();
+            }
+
+            // 显示学习卡片
+            learningText.textContent = q.fact;
+            learningCard.classList.add('active');
+
+            // 下一题
+            setTimeout(() => {
+                currentQuestion++;
+                if (health <= 0 || currentQuestion >= questions.length) {
+                    endGame();
+                } else {
+                    loadQuestion();
+                }
+            }, 3000);
+        }
+
+        // 更新分数
+        function updateScore() {
+            scoreDisplay.textContent = score;
+        }
+
+        // 更新生命值
+        function updateHealth() {
+            healthFill.style.width = health + '%';
+            
+            // 根据生命值改变颜色
+            if (health > 60) {
+                healthFill.style.background = 'linear-gradient(90deg, #4ecdc4, #44a08d)';
+            } else if (health > 30) {
+                healthFill.style.background = 'linear-gradient(90deg, #ffe66d, #f9c74f)';
+            } else {
+                healthFill.style.background = 'linear-gradient(90deg, #ff6b6b, #ee5a52)';
+            }
+        }
+
+        // 结束游戏
+        function endGame() {
+            gameActive = false;
+            gameScreen.classList.remove('active');
+            endScreen.classList.add('active');
+            
+            finalScore.textContent = score;
+            
+            // 根据分数显示不同消息
+            if (score >= 80) {
+                performanceMessage.textContent = "Excellent! You're a hypertension expert and your heart is well protected! 🎉";
+            } else if (score >= 60) {
+                performanceMessage.textContent = "Good job! You have solid knowledge about blood pressure health. 💪";
+            } else if (score >= 40) {
+                performanceMessage.textContent = "Not bad! Keep learning to better protect your heart. 📚";
+            } else {
+                performanceMessage.textContent = "Keep studying! Understanding hypertension is key to heart health. ❤️";
+            }
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            startGame();
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 游戏已经准备好
+        });
+    </script>
+</body>
+</html>
